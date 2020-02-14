@@ -30,4 +30,5 @@ main()
     without lock      5.983 seconds
     with lock         6.895 seconds
     with Rlock        6.068 seconds
-    without for: a+=1 0.018 seconds'''
+    without for: a+=1 0.018 seconds
+    without threads   7.310 seconds'''
