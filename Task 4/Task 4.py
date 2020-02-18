@@ -1,35 +1,32 @@
 import mysql.connector as mysql
 
-## connecting to the database using 'connect()' method
-## it takes 3 required parameters 'host', 'user', 'passwd'
-db = mysql.connect(
-    host = "localhost",
-    user = "root",
-    passwd = "admin"
-)
 
-print(db)
+class Connector():
+    def __init__(self, host, user, passwd):
+        self.connect = mysql.connect(
+            host = "localhost",
+            user = "root",
+            passwd = "dbms"
+        )
+        self.cursor = self.connect.cursor()
 
-# creating an instance of 'cursor' class which is used to execute the 'SQL' statements in 'Python'
-cursor = db.cursor()
+    def execute(self):
+        return self.cursor.execute("CREATE DATABASE datacamp")
 
-# creating a databse called 'datacamp'
-# 'execute()' method is used to compile a 'SQL' statement
-# below statement is used to create tha 'datacamp' database
-cursor.execute("CREATE DATABASE datacamp")
+    def cursor(self):
+        return self.cursor()
+
+    def fetchall(self):
+        # 'fetchall()' method fetches all the rows from the last executed statement
+        ## fetching all records from the 'cursor' object
+        return self.cursor.fetchall()
+
+    def commit(self):
+        ## to make final output we have to run the 'commit()' method of the database object
+        return self.commit()
 
 
 
-
-
-#----------------------SHOW DATABASE_____
-cursor = db.cursor()
-
-# executing the statement using 'execute()' method
-cursor.execute("SHOW DATABASES")
-
-# 'fetchall()' method fetches all the rows from the last executed statement
-databases = cursor.fetchall() ## it returns a list of all databases present
 
 # printing the list of databases
 print(databases)
@@ -38,32 +35,16 @@ print(databases)
 for database in databases:
     print(database)
 
-
-#-----------CREATING DB------------
-cursor = db.cursor()
-
 ## creating a databse called 'datacamp'
 ## 'execute()' method is used to compile a 'SQL' statement
 ## below statement is used to create tha 'datacamp' database
 cursor.execute("CREATE DATABASE datacamp")
 
 
-#-----------CREATING TABLE---------
-db = mysql.connect(
-    host = "localhost",
-    user = "root",
-    passwd = "dbms",
-    database = "datacamp"
-)
 
-cursor = db.cursor()
 
 ## creating a table called 'users' in the 'datacamp' database
 cursor.execute("CREATE TABLE users (name VARCHAR(255), user_name VARCHAR(255))")
-
-
-#-------------DROP TABLE,CREATE PK--------
-cursor = db.cursor()
 
 ## first we have to 'drop' the table which has already created to create it again with the 'PRIMARY KEY'
 ## 'DROP TABLE table_name' statement will drop the table from a database
@@ -113,8 +94,7 @@ query = "SELECT * FROM users"
 ## getting records from the table
 cursor.execute(query)
 
-## fetching all records from the 'cursor' object
-records = cursor.fetchall()
+
 
 ## Showing the data
 for record in records:
@@ -132,8 +112,7 @@ query = "SELECT * FROM users WHERE id = 5"
 ## getting records from the table
 cursor.execute(query)
 
-## fetching all records from the 'cursor' object
-records = cursor.fetchall()
+
 
 ## Showing the data
 for record in records:
