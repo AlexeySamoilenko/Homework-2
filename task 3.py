@@ -1,25 +1,22 @@
-from threading import Thread, RLock
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
-
-a = 0
-lock = RLock()
 
 def function(arg):
-    global a
-    lock.acquire()
+    a = 0
     for _ in range(arg):
         a += 1
-    lock.release()
+    return a
     
-
 def main():
-    threads = []
-    for i in range(5):
-        thread = Thread(target=function, args=(1000000,))
-        thread.start()
-        threads.append(thread)
-         
-    s=[t.join() for t in threads]
+    a=0
+    with ProcessPoolExecutor(max_workers=5) as executor:
+        future_a = [
+            executor.submit(function, arg = 1000000) for i in range(5)
+        ]
+        for i in as_completed(future_a):
+            a += i.result()
+            
+    
     print("----------------------", a) # ???
 
 
