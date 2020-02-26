@@ -1,126 +1,72 @@
-import mysql.connector as mysql
+import pymysql as mysql
+import Queries
+from Parser import insert_in_db
+from FileSaver import save_file
 
 
-class Connector():
-    def __init__(self, host, user, passwd):
-        self.connect = mysql.connect(
-            host = "localhost",
-            user = "root",
-            passwd = "dbms"
-        )
-        self.cursor = self.connect.cursor()
+class Connector(object):
+    def __init__(self, host, user, password, db):
+        self._conn = mysql.connect(host, user, password, db)
+        self._cursor = self._conn.cursor()
 
-    def execute(self):
-        return self.cursor.execute("CREATE DATABASE datacamp")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self.connection.close()
 
+    def __enter__(self):
+        return self
+
+    @property
+    def connection(self):
+        return self._conn
+
+    @property
     def cursor(self):
-        return self.cursor()
-
-    def fetchall(self):
-        # 'fetchall()' method fetches all the rows from the last executed statement
-        ## fetching all records from the 'cursor' object
-        return self.cursor.fetchall()
+        return self._cursor
 
     def commit(self):
-        ## to make final output we have to run the 'commit()' method of the database object
-        return self.commit()
+        self.connection.commit()
+
+    def execute(self, sql, params=None):
+        self.cursor.execute(sql, params or ())
+
+    def executemany(self, sql, params=None):
+        self.cursor.executemany(sql, params or ())
+
+    def fetchall(self):
+        return self.cursor.fetchall()
+
+    def query(self, sql, params=None):
+        self.cursor.execute(sql, params or ())
+        return self.fetchall()
+
+    def fetchone(self):
+        return self.cursor.fetchone()
+
+    def lst_str(self, fn):
+        if type(fn) in [list, tuple, set]:
+            for i in fn:
+                self.execute(i)
+        elif type(fn) == str:
+            self.execute(fn)
 
 
+def main(host, user, passwd, name_db,
+         read_file_path1,read_file_path2, save_path_file):
+    #Queries.create_db(host, user, passwd, name_db)
+    with Connector(host, user, passwd, name_db) as db:
+        db.lst_str(Queries.drop_tables())
+        db.lst_str(Queries.create_tables())
+        insert_in_db(db, read_file_path1, read_file_path2)
+        db.commit()
+
+        list_of_queries = Queries.list_of_queries()
+        print(list_of_queries)
+        for i in list_of_queries:
+            print(db.query(i))
+            save_file(db.query(i), save_path_file)
 
 
-# printing the list of databases
-print(databases)
-
-# showing one by one database
-for database in databases:
-    print(database)
-
-## creating a databse called 'datacamp'
-## 'execute()' method is used to compile a 'SQL' statement
-## below statement is used to create tha 'datacamp' database
-cursor.execute("CREATE DATABASE datacamp")
-
-
-
-
-## creating a table called 'users' in the 'datacamp' database
-cursor.execute("CREATE TABLE users (name VARCHAR(255), user_name VARCHAR(255))")
-
-## first we have to 'drop' the table which has already created to create it again with the 'PRIMARY KEY'
-## 'DROP TABLE table_name' statement will drop the table from a database
-cursor.execute("DROP TABLE users")
-
-## creating the 'users' table again with the 'PRIMARY KEY'
-cursor.execute("CREATE TABLE users (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), user_name VARCHAR(255))")
-
-
-#-------------Inserting Data-------------
-## defining the Query
-query = "INSERT INTO users (name, user_name) VALUES (%s, %s)"
-## storing values in a variable
-values = ("Hafeez", "hafeez")
-
-## executing the query with values
-cursor.execute(query, values)
-
-## to make final output we have to run the 'commit()' method of the database object
-db.commit()
-
-print(cursor.rowcount, "record inserted")
-
-
-#-------Inserting Multiple Rows-------
-query = "INSERT INTO users (name, user_name) VALUES (%s, %s)"
-## storing values in a variable
-values = [
-    ("Peter", "peter"),
-    ("Amy", "amy"),
-    ("Michael", "michael"),
-    ("Hennah", "hennah")
-]
-
-## executing the query with values
-cursor.executemany(query, values)
-
-## to make final output we have to run the 'commit()' method of the database object
-db.commit()
-
-print(cursor.rowcount, "records inserted")
-
-
-#-------------Select Data-----------
-query = "SELECT * FROM users"
-
-## getting records from the table
-cursor.execute(query)
-
-
-
-## Showing the data
-for record in records:
-    print(record)
-(1, 'Hafeez', 'hafeez')
-(2, 'Peter', 'peter')
-(3, 'Amy', 'amy')
-(4, 'Michael', 'michael')
-(5, 'Hennah', 'hennah')
-
-
-#-----------Where________
-query = "SELECT * FROM users WHERE id = 5"
-
-## getting records from the table
-cursor.execute(query)
-
-
-
-## Showing the data
-for record in records:
-    print(record)
-
-
-
-
-
+if __name__ == "__main__":
+    main('localhost', 'root', 'admin', 'tests', 'rooms.json', 'students.json', 'result.json')
 
 
