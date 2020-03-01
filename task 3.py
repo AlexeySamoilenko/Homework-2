@@ -1,23 +1,22 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
-def function(arg):
-    a = 0
+def function(arg, a):
     for _ in range(arg):
         a += 1
     return a
-    
+
+
 def main():
-    a=0
+    a = 0
     with ProcessPoolExecutor(max_workers=5) as executor:
         future_a = [
-            executor.submit(function, arg = 1000000) for i in range(5)
+            executor.submit(function, 1000000, a) for i in range(5)
         ]
         for i in as_completed(future_a):
             a += i.result()
-            
-    
-    print("----------------------", a) # ???
+
+    print("----------------------", a)  # ???
 
 
 main()
